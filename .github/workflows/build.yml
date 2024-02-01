@@ -4,30 +4,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      BEFORE_PROCESSING_FILE: shortcut-to-github1s.mov
-      AFTER_PROCESSING_FILE: shortcut-to-github1s.gif
+      INPUT: rtsp://admin:Ubu38p7D@ozonbrest.ddns.net/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif
+      KEY: ve7b-jpye-hx4f-5gq3-06g7
     steps:
       - uses: actions/checkout@v2
       - name: Setup ffmpeg
         uses: FedericoCarboni/setup-ffmpeg@v1-beta
         id: setup-ffmpeg
       - name: Execute ffmpeg
-        run: ffmpeg -y -i origin/${{ env.BEFORE_PROCESSING_FILE }} -vf scale=800:-1 -r 10 processed/${{ env.AFTER_PROCESSING_FILE }}
-      - name: Check to see if a new video file has been created
-        id: changes
-        run: |
-          git add -N .
-          echo "::set-output name=count::$(git diff --name-only | wc -l)"
-      - name: Commit files
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add ./processed/*
-          git commit -m "Add changes" -a
-        if: steps.changes.outputs.count > 0
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
-        if: steps.changes.outputs.count > 0
+        run: ffmpeg -nostats -hide_banner -nostdin -loglevel error -f lavfi -i anullsrc -rtsp_transport tcp -r 25 -re  -analyzeduration 0 -probesize 1024 -i ${{ env.INPUT }} -tune zerolatency -c:v copy -c:a aac -strict experimental -f flv rtmp://x.rtmp.youtube.com/live2/${{ env.KEY }}
+      # - name: Check to see if a new video file has been created
+      #   id: changes
+      #   run: |
+      #     git add -N .
+      #     echo "::set-output name=count::$(git diff --name-only | wc -l)"
+      # - name: Commit files
+      #   run: |
+      #     git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      #     git config --local user.name "github-actions[bot]"
+      #     git add ./processed/*
+      #     git commit -m "Add changes" -a
+      #   if: steps.changes.outputs.count > 0
+      # - name: Push changes
+      #   uses: ad-m/github-push-action@master
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     branch: ${{ github.ref }}
+      #   if: steps.changes.outputs.count > 0
